@@ -1,0 +1,56 @@
+{
+  "data": [
+    {
+      "name": "Computer",
+      "children": [
+        {
+          "name": "laptops",
+          "url": "/laptop",
+          "children": [
+            {
+              "name": "Business series",
+              "url": "/child32"
+            },
+            {
+              "name": "Gamming",
+              "url": "/child32"
+            }
+          ]
+        },
+        {
+          "name": "Desktop",
+          "url": "/desktop",
+          "children": [
+            {
+              "name": "Desktop 2021",
+              "url": "/item"
+            },
+            {
+              "name": "Desktop 2020",
+              "url": "/item"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Networking",
+      "children": [
+        {
+          "name": "Router",
+          "url": "/router",
+          "children": [
+            {
+              "name": "router",
+              "url": "/item"
+            },
+            {
+              "name": "router 2020",
+              "url": "/item"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
