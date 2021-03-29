@@ -1,0 +1,17 @@
+.list__group {
+  width: fit-content;
+}
+.indentSubMenu {
+  margin-left: 20px;
+}
+.selected_menu {
+  background-color: rgb(13, 104, 139) !important;
+  color: #fff;
+}
+.list__menu {
+  cursor: pointer;
+}
+
+img {
+  width: 15px;
+}
