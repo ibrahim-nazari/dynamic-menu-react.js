@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ComputerIcon from "@material-ui/icons/Computer";
 import RouterIcon from "@material-ui/icons/Router";
 import { ToastContainer, toast } from "react-toastify";
@@ -19,7 +19,7 @@ import MenuItem from "./MenuItem";
 // computer  children laptop desktop  children Dell lenevo
 
 function App() {
-  const menuLists = [
+  const [menuLists, setMenuLists] = useState([
     {
       name: "computer",
       label: "Computer",
@@ -53,24 +53,29 @@ function App() {
       name: "network",
       label: "Network",
       Icon: RouterIcon,
+      children: [],
     },
-  ];
-  const handlerLevelThree = (menu) => {
+  ]);
+
+  const handlerLevelThree = (menu, indexOne, indexTwo, indexThree) => {
     if (menu.children) {
       return (
         <ListGroup key={menu.name} className="indentSubMenu">
           <MenuItem
             handleDelete={onhandleDelete}
             selectParent={selectParent}
+            index={[indexOne, indexTwo, indexThree]}
             menu={menu}
             updateMenu={onupdateMenu}
           />
-          {menu.children.map((subMenu) => (
+          {menu.children.map((subMenu, indexFour) => (
             <MenuItem
               handleDelete={onhandleDelete}
               selectParent={selectParent}
               menu={subMenu}
+              index={[indexOne, indexTwo, indexThree, indexFour]}
               updateMenu={onupdateMenu}
+              indent={true}
             />
           ))}
         </ListGroup>
@@ -82,12 +87,13 @@ function App() {
         handleDelete={onhandleDelete}
         selectParent={selectParent}
         menu={menu}
+        index={[indexOne, indexTwo, indexThree]}
         updateMenu={onupdateMenu}
       />
     );
   };
 
-  const handlerLevelTwo = (menu) => {
+  const handlerLevelTwo = (menu, indexOne, indexTwo) => {
     if (menu.children) {
       return (
         <ListGroup className="indentSubMenu" key={menu.name}>
@@ -95,10 +101,11 @@ function App() {
             handleDelete={onhandleDelete}
             selectParent={selectParent}
             menu={menu}
+            index={[indexOne, indexTwo]}
             updateMenu={onupdateMenu}
           />
-          {menu.children.map((subMenu) => (
-            <> {handlerLevelThree(subMenu)}</>
+          {menu.children.map((subMenu, indexThree) => (
+            <> {handlerLevelThree(subMenu, indexOne, indexTwo, indexThree)}</>
           ))}
         </ListGroup>
       );
@@ -109,11 +116,12 @@ function App() {
         handleDelete={onhandleDelete}
         selectParent={selectParent}
         menu={menu}
+        index={[indexOne, indexTwo]}
         updateMenu={onupdateMenu}
       />
     );
   };
-  const handlerLevelOne = (menu) => {
+  const handlerLevelOne = (menu, indexOne) => {
     if (menu.children) {
       return (
         <ListGroup key={menu.name}>
@@ -121,10 +129,11 @@ function App() {
             handleDelete={onhandleDelete}
             selectParent={selectParent}
             menu={menu}
+            index={[indexOne]}
             updateMenu={onupdateMenu}
           />
-          {menu.children.map((subMenu) => (
-            <>{handlerLevelTwo(subMenu)}</>
+          {menu.children.map((subMenu, indexTwo) => (
+            <>{handlerLevelTwo(subMenu, indexOne, indexTwo)}</>
           ))}
         </ListGroup>
       );
@@ -135,27 +144,70 @@ function App() {
         handleDelete={onhandleDelete}
         selectParent={selectParent}
         menu={menu}
+        index={[indexOne]}
         updateMenu={onupdateMenu}
       />
     );
   };
-  const [selectParent, setSelectParent] = useState("");
+  const [selectParent, setSelectParent] = useState([]);
   const [menu, setMenu] = useState("");
+
+  const onupdateMenu = (val, index) => {
+    setRoot(false);
+    setSelectParent([val, index]);
+  };
   const [link, setLink] = useState("");
   const [root, setRoot] = useState("");
-  const onupdateMenu = (val) => {
-    setRoot("");
-    setSelectParent(val);
-    console.log(val);
-  };
   const submitMenu = (e) => {
     e.preventDefault();
-    if (selectParent == "" && root == "") {
+    if ((selectParent.length < 1 && !root) || link == "" || menu == "") {
       toast.error("Please select a parent");
+      return false;
     }
-    console.log(root);
+
+    let newMenulist = menuLists;
+    console.log(selectParent);
+    let index = selectParent[1];
+    let text = menu.toLowerCase();
+    const fUpper = (string) => string.charAt(0).toUpperCase() + string.slice(1);
+
+    let item = {
+      name: text,
+      label: fUpper(text),
+      link,
+      Icon: "",
+      children: [],
+    };
+    console.log(newMenulist[index[0]]);
+    if (root) {
+      newMenulist.push(item);
+    } else if (index.length == 1) {
+      newMenulist[index[0]].children.push(item);
+    } else if (index.length == 2) {
+      newMenulist[index[0]].children[index[1]].children.push(item);
+    } else if (index.length == 3) {
+      newMenulist[index[0]].children[index[1]].children[index[2]].children.push(
+        item
+      );
+    }
+    setMenuLists([...newMenulist]);
   };
-  const onhandleDelete = () => {};
+  const onhandleDelete = (index) => {
+    let newMenulist = menuLists;
+    if (index.length == 1) {
+      newMenulist.splice([index[0]], 1);
+    } else if (index.length == 2) {
+      newMenulist[index[0]].children.splice(index[1], 1);
+    } else if (index.length == 3) {
+      newMenulist[index[0]].children[index[1]].children.splice(index[2], 1);
+    } else if (index.length == 4) {
+      newMenulist[index[0]].children[index[1]].children[
+        index[2]
+      ].children.splice(index[3], 1);
+    }
+    setMenuLists([...newMenulist]);
+  };
+
   return (
     <Container fluid="sm" className="mt-5">
       <ToastContainer />
@@ -195,15 +247,18 @@ function App() {
           <Col>
             <Input
               type="checkbox"
-              value="root"
-              onChange={(e) => setRoot(e.target.value)}
+              checked={root}
+              onChange={(e) => {
+                setRoot(e.target.checked);
+                setSelectParent(["", []]);
+              }}
             />{" "}
             <label>Root menu</label>
           </Col>
           <ListGroup className="list__group">
-            {menuLists.map((menu) => (
+            {menuLists.map((menu, indexOne) => (
               <>
-                <ListGroupItem>{handlerLevelOne(menu)}</ListGroupItem>
+                <ListGroupItem>{handlerLevelOne(menu, indexOne)}</ListGroupItem>
               </>
             ))}
           </ListGroup>
